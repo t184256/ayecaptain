@@ -4,6 +4,7 @@ mkShell {
   buildInputs = [
     (python3.withPackages (ps: with ps; [
       numpy
+      scipy
       cairo
       pygobject3
     ]))

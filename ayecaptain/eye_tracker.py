@@ -7,8 +7,10 @@ import socket
 class EyeTracker:
     def __init__(self, host='localhost', port=10000, device=None):
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEPORT, 1)
         self._sock.bind((host, port))
-        self.device = None
+        self.device = device
 
     def __iter__(self):
         return self
