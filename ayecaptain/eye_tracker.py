@@ -20,11 +20,11 @@ class EyeTracker:
             data = self._sock.recv(128).decode()
             assert data.endswith('\n')
             data = data[:-1]
-            url, t, x, y = data.split()
-            if self.device is not None and url != self.device:
+            uri, t, x, y = data.split()
+            if self.device is not None and uri != self.device:
                 continue
             assert t == 'gaze:'
             x, y = float(x), float(y)
             if math.isnan(x) or math.isnan(y):
                 x, y = None, None
-            return x, y
+            return uri, x, y
