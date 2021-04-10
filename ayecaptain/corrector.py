@@ -9,11 +9,12 @@ class Corrector:
         try:
             f = np.load(self.path)
             self.corr_x, self.corr_y = f['corr_x'], f['corr_y']
-            assert self.corr_x.shape == self.corr_y.shape == (size_x, size_y)
+            assert self.corr_x.shape == (size_x * 2, size_y * 2)
+            assert self.corr_y.shape == (size_x * 2, size_y * 2)
         except FileNotFoundError:
             print('Initializing new correction matrices!')
-            self.corr_x = np.zeros((size_x, size_y))
-            self.corr_y = np.zeros((size_x, size_y))
+            self.corr_x = np.zeros((size_x * 2, size_y * 2))  # * 2 to mitigate
+            self.corr_y = np.zeros((size_x * 2, size_y * 2))  # tail wrapping
         self.size_x, self.size_y, self.sigma = size_x, size_y, size_x * sigma
         self.x_fix_cap = self.size_x * correction_cap
         self.y_fix_cap = self.size_y * correction_cap
@@ -27,8 +28,8 @@ class Corrector:
         print('Correction kernel inititialized')
 
     def bin_coord(self, x, y):
-        i = np.clip(int(x * self.size_x), 0, self.size_x - 1)
-        j = np.clip(int(y * self.size_y), 0, self.size_y - 1)
+        i = np.clip(int((x + .5) * self.size_x), 0, self.size_x - 1)
+        j = np.clip(int((y + .5) * self.size_y), 0, self.size_y - 1)
         return i, j
 
     def learn(self, x, y, x_fix, y_fix, weight):
