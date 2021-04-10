@@ -11,10 +11,11 @@ import ayecaptain.eye_tracker
 HOST, PORT, WIDTH, HEIGHT, DEVICE = sys.argv[1:]
 PORT, WIDTH, HEIGHT = int(PORT), int(WIDTH), int(HEIGHT)
 
-LEARNING_WEIGHT = 1/2
-SIGMA = 1/10  # of the screen width
-CORRECTION_CAP = 1/40  # of the screen width
+LEARNING_WEIGHT = 1/3
+SIGMA = 1/30  # of the screen width
+CORRECTION_CAP = 1/100  # of the screen width
 SAVE_EACH = 5
+SHOW_CURRENT = False
 
 
 ow = ayecaptain.drawing.OverlayWindow(WIDTH, HEIGHT)
@@ -96,17 +97,20 @@ tracker = median_filter(tracker, n_min=15, n_max=30)
 
 for x, y in tracker:
     if x is None or y is None:
-        p_raw.move(None, None)
-        p_current.move(None, None)
+        if SHOW_CURRENT:
+            p_raw.move(None, None)
+            p_current.move(None, None)
         p_counterweight.move(None, None)
         current_x_raw, current_y_raw = None, None
         current_x, current_y = None, None
         continue
 
-    p_raw.move(x, y)
+    if SHOW_CURRENT:
+        p_raw.move(x, y)
     current_x_raw, current_y_raw = x, y
     current_x, current_y = corrector.correct(x, y)
-    p_current.move(current_x, current_y)
+    if SHOW_CURRENT:
+        p_current.move(current_x, current_y)
 
     if compensating:
         compensation_x = current_x - pivot_point_x
