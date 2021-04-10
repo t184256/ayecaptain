@@ -2,6 +2,8 @@
 
 import sys
 
+import numpy as np
+
 import ayecaptain.corrector
 import ayecaptain.drawing
 import ayecaptain.eye_tracker
@@ -9,10 +11,10 @@ import ayecaptain.eye_tracker
 HOST, PORT, WIDTH, HEIGHT, DEVICE = sys.argv[1:]
 PORT, WIDTH, HEIGHT = int(PORT), int(WIDTH), int(HEIGHT)
 
-LEARNING_WEIGHT = 1/1
+LEARNING_WEIGHT = 1/2
 SIGMA = 1/10  # of the screen width
-CORRECTION_CAP = 1/10  # of the screen width
-SAVE_EACH = 10
+CORRECTION_CAP = 1/40  # of the screen width
+SAVE_EACH = 5
 
 
 ow = ayecaptain.drawing.OverlayWindow(WIDTH, HEIGHT)
@@ -72,7 +74,27 @@ ow.connect_key_press_callback(key_press_callback)
 ow.connect_key_release_callback(key_release_callback)
 
 
-for x, y in ayecaptain.eye_tracker.EyeTracker(HOST, PORT, DEVICE):
+def median_filter(gen, n_min, n_max):
+    xs, ys = [], []
+    for x, y in gen:
+        if x is None or y is None:
+            xs, ys = [], []
+            continue
+        xs.append(x)
+        ys.append(y)
+        xs = xs[-n_max:]
+        ys = ys[-n_max:]
+        ln = len(xs)
+        if ln > n_min:
+            yield np.median(xs), np.median(ys)
+        else:
+            yield None, None
+
+
+tracker = ayecaptain.eye_tracker.EyeTracker(HOST, PORT, DEVICE)
+tracker = median_filter(tracker, n_min=15, n_max=30)
+
+for x, y in tracker:
     if x is None or y is None:
         p_raw.move(None, None)
         p_current.move(None, None)
