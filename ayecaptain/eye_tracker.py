@@ -17,14 +17,17 @@ class EyeTracker:
 
     def __next__(self):
         while True:
-            data = self._sock.recv(128).decode()
+            data = self._sock.recv(512).decode()
+            if not data.endswith('\n'):
+                print(repr(data))
             assert data.endswith('\n')
             data = data[:-1]
-            url, t, x, y = data.split()
+            url, ts, typ, *rest = data.split()
             if self.device is not None and url != self.device:
                 continue
-            assert t == 'gaze:'
-            x, y = float(x), float(y)
-            if math.isnan(x) or math.isnan(y):
-                x, y = None, None
-            return x, y
+            if typ == 'gaze:':
+                x, y = rest
+                x, y = float(x), float(y)
+                if math.isnan(x) or math.isnan(y):
+                    x, y = None, None
+                return x, y
